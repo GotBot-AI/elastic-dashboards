@@ -1,0 +1,53 @@
+PUT _ingest/pipeline/script_coversationId_and_set_direct_message_pipeline
+{
+  "description": "script coversationId and set direct message pipeline pipeline",
+  "processors": [
+    {
+      "script": {
+        "source": """
+              ctx['conversationId']= ctx['threadId']+ '-' + String.valueOf(ctx['conversation']);
+              ctx['item']= 'message';
+        """
+      },
+      "set": {
+        "field": "interaction_type",
+        "value": "Direct Message"
+      }
+    }
+  ]
+}
+
+
+POST _reindex
+{
+  "source": {
+    "index": "Random_Client_Name.transcripts"
+  },
+  "dest": {
+    "index": "Random_Client_Name.transcripts2",
+    "pipeline": "script_coversationId_and_set_direct_message_pipeline"
+  }
+}
+
+
+POST _reindex
+{
+  "source": {
+    "index": "Random_Client_Name.transcripts2"
+  },
+  "dest": {
+    "index": "Random_Client_Name.transcripts",
+    "pipeline": "script_coversationId_and_set_direct_message_pipeline"
+  }
+}
+
+
+PUT Random_Client_Name.transcripts/_settings
+{
+  "settings": {
+    "index.default_pipeline": "script_coversationId_and_set_direct_message_pipeline"
+  }
+}
+
+
+DELETE Random_Client_Name.transcripts2

@@ -1,0 +1,6 @@
+POST /_aliases
+{
+  "actions" : [
+    { "add": { "indices" : ["Random_Client_Name.transcripts", "Random_Client_Name.eventlogs" ], "alias" : "Random_Client_Name.interactions" } }
+  ]
+}

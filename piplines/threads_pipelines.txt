@@ -1,0 +1,64 @@
+PUT _ingest/pipeline/conversations-pipeline
+{
+  "description": "completed and opened conversations pipeline",
+  "processors": [
+    {
+      "script": {
+        "source": """
+          if(ctx['replyMode']=='bot' || ctx['replyMode']=='agent'){
+            
+              if(ctx['conversationActive']==true){
+                  ctx['opendConversations']= 1;
+                  ctx['CompletedConversations']= ctx['conversations']-1;
+              }
+              else{
+                ctx['opendConversations']= 0;
+                ctx['CompletedConversations']= ctx['conversations'];
+
+              }
+          }
+          else{
+            ctx['opendConversations']= 1;
+            ctx['CompletedConversations']= ctx['conversations']-1;
+          }
+        """
+      }
+
+    }
+  ]
+}
+
+
+POST _reindex
+{
+  "source": {
+    "index": "Random_Client_Name.threads"
+  },
+  "dest": {
+    "index": "Random_Client_Name.threads2",
+    "pipeline": "conversations-pipeline"
+  }
+}
+
+
+POST _reindex
+{
+  "source": {
+    "index": "Random_Client_Name.threads2"
+  },
+  "dest": {
+    "index": "Random_Client_Name.threads"
+  }
+}
+
+
+PUT Random_Client_Name.threads/_settings
+{
+  "settings": {
+    "index.default_pipeline": "conversations-pipeline"
+  }
+}
+
+
+DELETE Random_Client_Name.threads2
+

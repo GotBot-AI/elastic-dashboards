@@ -1,0 +1,6 @@
+POST /_aliases
+{
+  "actions" : [
+    { "add": { "index" : "Random_Client_Name.transcripts", "alias" : "Random_Client_Name.interactions" } }
+  ]
+}

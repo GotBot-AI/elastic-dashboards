@@ -1,0 +1,55 @@
+PUT _ingest/pipeline/rename_channel_and_set_feed_pipeline
+{
+  "description" : "rename channel and set feed pipeline",
+  "processors" : [
+    {
+      "rename": {
+        "field": "channelType",
+        "target_field": "channel"
+        , "ignore_missing": true
+      },
+      "set": {
+        "field": "interaction_type",
+        "value": "Feed"
+      }
+    }
+  ]
+}
+
+
+POST _reindex
+{
+  "source": {
+    "index": "Random_Client_Name.eventlogs"
+  },
+  "dest": {
+    "index": "Random_Client_Name.eventlogs2",
+    "pipeline": "rename_channel_and_set_feed_pipeline"
+  }
+}
+
+
+POST _reindex
+{
+  "source": {
+    "index": "Random_Client_Name.eventlogs2"
+  },
+  "dest": {
+    "index": "Random_Client_Name.eventlogs",
+    "pipeline": "rename_channel_and_set_feed_pipeline"
+  }
+} 
+
+
+PUT Random_Client_Name.eventlogs/_settings
+{
+  "settings": {
+    "index.default_pipeline": "rename_channel_and_set_feed_pipeline"
+  }
+}
+
+
+DELETE Random_Client_Name.eventlogs2
+
+
+GET _tasks?actions=*reindex&detailed
